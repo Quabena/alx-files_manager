@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const crypto = require("crypto");
 const dbClient = require("../utils/db");
 const redisClient = require("../utils/redis");
@@ -65,45 +64,3 @@ UsersController.getMe = async function (req, res) {
 };
 
 module.exports = UsersController;
-=======
-const crypto = require('crypto');
-const dbClient = require('../utils/db');
-
-class UsersController {
-  static async postNew(req, res) {
-    const { email, password } = req.body || {};
-
-    if (!email) {
-      return res.status(400).json({ error: 'Missing email' });
-    }
-
-    if (!password) {
-      return res.status(400).json({ error: 'Missing password' });
-    }
-
-    try {
-      const userExists = await dbClient.db
-        .collection('users')
-        .findOne({ email });
-
-      if (userExists) {
-        return res.status(400).json({ error: 'Already exist' });
-      }
-
-      const hashedPassword = crypto
-        .createHash('sha1')
-        .update(password)
-        .digest('hex');
-      const result = await dbClient.db
-        .collection('users')
-        .insertOne({ email, password: hashedPassword });
-
-      return res.status(201).json({ email, id: result.insertedId });
-    } catch (err) {
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-}
-
-module.exports = UsersController;
->>>>>>> c0cafd346670b8192997cdd408e9910b4b462202
