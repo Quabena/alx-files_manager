@@ -1,46 +1,53 @@
-import { createClient } from 'redis';
+const redis = require('redis');
 
 class RedisClient {
   constructor() {
-    this.client = createClient();
+    this.client = redis.createClient();
     this.client.on('error', (err) => {
       console.error('Redis Client Error:', err.message || err);
     });
-    this.client.connect();
   }
 
   isAlive() {
-    return this.client.isOpen;
+    return this.client.connected;
   }
 
-  async get(key) {
-    try {
-      const value = await this.client.get(key);
-      return value;
-    } catch (err) {
-      console.error(`Error getting key ${key}:`, err.message || err);
-      return null;
-    }
-  }
-
-  async set(key, value, duration) {
-    try {
-      await this.client.set(key, value, {
-        EX: duration,
+  get(key) {
+    return new Promise((resolve, reject) => {
+      this.client.get(key, (err, reply) => {
+        if (err) {
+          console.error(`Error getting key ${key}:`, err.message || err);
+          return reject(err);
+        }
+        resolve(reply);
       });
-    } catch (err) {
-      console.error(`Error setting key ${key}:`, err.message || err);
-    }
+    });
   }
 
-  async del(key) {
-    try {
-      await this.client.del(key);
-    } catch (err) {
-      console.error(`Error deleting key ${key}:`, err.message || err);
-    }
+  set(key, value, duration) {
+    return new Promise((resolve, reject) => {
+      this.client.setex(key, duration, value, (err) => {
+        if (err) {
+          console.error(`Error setting key ${key}:`, err.message || err);
+          return reject(err);
+        }
+        resolve(true);
+      });
+    });
+  }
+
+  del(key) {
+    return new Promise((resolve, reject) => {
+      this.client.del(key, (err) => {
+        if (err) {
+          console.error(`Error deleting key ${key}:`, err.message || err);
+          return reject(err);
+        }
+        resolve(true);
+      });
+    });
   }
 }
 
 const redisClient = new RedisClient();
-export default redisClient;
+module.exports = redisClient;
