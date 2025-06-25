@@ -1,4 +1,5 @@
-const { MongoClient } = require("mongodb");
+// utils/db.js
+const { MongoClient, ObjectId } = require("mongodb");
 
 class DBClient {
   constructor() {
@@ -12,6 +13,7 @@ class DBClient {
 
     this.client.connect((err) => {
       if (err) {
+        // eslint-disable-next-line no-console
         console.error("MongoDB connection error:", err.message || err);
       } else {
         this.db = this.client.db(dbName);
@@ -35,4 +37,8 @@ class DBClient {
 }
 
 const dbClient = new DBClient();
-module.exports = dbClient;
+
+module.exports = {
+  ...dbClient,
+  getObjectId: (id) => new ObjectId(id),
+};
